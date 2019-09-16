@@ -1,0 +1,470 @@
+﻿/*****************************
+* Yao,Zhaoyuan 创建于 2018/11/10
+* 上一次修改时间：2018/11/13
+* GitHub:https://github.com/yzyGitHuub/
+* 保留所有权利
+* **************************/
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ProjectionAndRotation
+{
+    public partial class Editor : Form
+    {
+        bool isParallel = true;
+        public Editor()
+        {
+            InitializeComponent();
+            timer1.Stop();
+            pictureBoxUp.Parent = pictureBoxDown;
+            selectToolStripComboBox1.SelectedIndex = 0;
+            formTextRebuild();
+        }
+
+        /* ************************************************
+         * 与窗体相关的函数
+         * 主要涉及窗体变化时调整显示的函数，主要都是些 refresh
+         * 还有标注当前显示状态的函数也就是窗体的名字
+         * ************************************************/
+
+        private void Editor_Resize(object sender, EventArgs e)
+        {
+            pictureBoxDown.Refresh();
+            pictureBoxUp.Refresh();
+        }
+        private void formTextRebuild()
+        {
+            //在本版本中投影平面都是同一个，也即 z = 0 平面（或者说叫 xoy 平面）
+            string str = "https://github.com/yzyGitHuub/ - z=0";
+            switch(selectToolStripComboBox1.SelectedIndex)
+            {
+                case 0:
+                    str += " - 默认(平行投影) - 投影方向：";
+                    toolStripLabel1.Text = "投影方向 x:";
+                    isParallel = true;
+                    break;
+                case 1:
+                    str += " - 平行投影 - 投影方向：";
+                    toolStripLabel1.Text = "投影方向 x:";
+                    isParallel = true;
+                    break;
+                case 2:
+                    str += " - 透视投影 - 视点坐标：";
+                    toolStripLabel1.Text = "视点坐标 x:";
+                    isParallel = false;
+                    break;
+                default:
+                    str += " - @_@ - 出错了呢";
+                    return;
+            }
+            str += " (" + xCordinateToolStripTextBox.Text + ", " + yCordinateToolStripTextBox + ", " + zCordinateToolStripTextBox + ")";
+            if (roateDefaultToolStripMenuItem.Enabled)
+                str += " - 固定";
+            else
+                str += " - 自动旋转";
+            this.Text = str;
+        }
+        private void aboutToolStripSubMenuItem_Click(object sender, EventArgs e)
+        {
+            string str = "作者：https://github.com/yzyGitHuub/ \t时间：2018/11/3\n\nID：1600012406\n\n";
+            str += "项目内容：投影和旋转\n\n";
+            str += "版权所有，盗版必究.\n";
+            MessageBox.Show(str, "关于");
+            
+        }
+        private void helpToolStripSubMenuItem_Click(object sender, EventArgs e)
+        {
+            string str = "https://github.com/yzyGitHuub/ 由 Yao,Zhaoyuan 创建于 2018/11/12 \t上一次修改时间：2018/11/13\n\n\n";
+            str += "使用说明：\n";
+            str += " * 菜单栏主要是所有工具的集合，但是因为时间关系没有拖拽进去;\n";
+            str += " * 工具栏主要是所有工具的集合，只有编辑工具条;\n";
+            str += "    @ 点击编辑会出现开始编辑的选项，选择开始编辑以后才可以进行视点坐标、旋转速度等的设定;\n";
+            str += "    @ 回车结束输入，或者点击 Apply 键应用更改;\n";
+            str += "    @ 输入的字符应该只有整数或小数，设置了部分检查机制，但是不能保证所有错误都被避免;\n";
+            str += "\nTIPS:\n";
+            str += " * 时间关系，并没有完成全部选项对应的功能，但是有相应的提示;\n";
+            str += " * 可以在透视投影中分析点是否可见，如果光源在投影点和 z = 0 平面之间，视为投影到无穷远处，用虚线表示;\n";
+            str += " * 界面风格是模仿 ArcGIS 的 Editor 工具条设计;\n";
+            str += " * 虽然还不能修改，但是支持多面体的修改，应该很容易开发出来.\n";
+            string cap = "使用说明";
+            MessageBox.Show(str, "帮助");
+        }
+
+
+        /* *********************************
+         * 编辑工具栏相关事件
+         * *********************************/
+
+        //以下为编辑设置
+        private void startEditToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            xCordinateToolStripTextBox.Enabled = true;
+            yCordinateToolStripTextBox.Enabled = true;
+            zCordinateToolStripTextBox.Enabled = true;
+            endEditToolStripMenuItem.Enabled = true;
+            saveEditToolStripMenuItem.Enabled = true;
+            startEditToolStripMenuItem.Enabled = false;
+            applyToolStripButton.Enabled = true;
+            roateSpeedToolStripTextBox.Enabled = true;
+        }
+        private void endEditToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            xCordinateToolStripTextBox.Enabled = false;
+            yCordinateToolStripTextBox.Enabled = false;
+            zCordinateToolStripTextBox.Enabled = false;
+            endEditToolStripMenuItem.Enabled = false;
+            saveEditToolStripMenuItem.Enabled = false;
+            startEditToolStripMenuItem.Enabled = true;
+            applyToolStripButton.Enabled = false;
+        }
+        private void saveEditToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            
+            MessageBox.Show("暂时还不能保存设置");
+            saveEditToolStripMenuItem.Enabled = false;
+        }
+        private void importToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            stopToolStripButton3_Click(sender, e);
+            inputButton1.Visible = true;
+            inputTextBox1.Visible = true;
+        }
+
+        //以下为编辑工具栏的按钮们
+        //当 x, y, z 坐标值变化时，启动重新绘制的函数，相当于点了那个 APPLY 键
+        private void xCordinateToolStripTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = true;
+            if (e.KeyChar == (char)13)
+            {
+                applyTtripButton_Click(sender, e);
+            }
+            else if (e.KeyChar >= '0' && e.KeyChar <= '9' || e.KeyChar == '.' || e.KeyChar == (char)8)
+            {
+                e.Handled = false;
+            }
+            else
+                MessageBox.Show("The key \"" + e.KeyChar + "\" entered is illegal.\n\nPlease entry the key of \" Enter\" to confirm your revise.", "Warning!");
+        }
+        private void zCordinateToolStripTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = true;
+            if (e.KeyChar == (char)13)
+            {
+                applyTtripButton_Click(sender, e);
+            }
+            else if (e.KeyChar >= '0' && e.KeyChar <= '9' || e.KeyChar == '.' || e.KeyChar == (char)8)
+            {
+                e.Handled = false;
+            }
+            else
+                MessageBox.Show("The key \"" + e.KeyChar + "\" entered is illegal.\n\nPlease entry the key of \" Enter\" to confirm your revise.", "Warning!");
+            if (double.Parse(zCordinateToolStripTextBox.Text.ToString()) == 0.0)
+            {
+                zCordinateToolStripTextBox.Text = "200";
+                MessageBox.Show("z 不能为 0 ！", "错误的输入");
+            }
+        }
+
+        private void yCordinateToolStripTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = true;
+            if (e.KeyChar == (char)13)
+            {
+                applyTtripButton_Click(sender, e);
+            }
+            else if (e.KeyChar >= '0' && e.KeyChar <= '9' || e.KeyChar == '.' || e.KeyChar == (char)8)
+            {
+                e.Handled = false;
+            }
+            else
+                MessageBox.Show("The key \"" + e.KeyChar + "\" entered is illegal.\n\nPlease entry the key of \" Enter\" to confirm your revise.", "Warning!");
+        }
+
+
+        //当点击确认修改的按钮时
+        private void applyTtripButton_Click(object sender, EventArgs e)
+        {
+            if (xCordinateToolStripTextBox.Text == "")
+                xCordinateToolStripTextBox.Text = "200";
+            if (yCordinateToolStripTextBox.Text == "")
+                yCordinateToolStripTextBox.Text = "200";
+            if (zCordinateToolStripTextBox.Text == "")
+                zCordinateToolStripTextBox.Text = "200";
+            try
+            {
+                station = new MyPoint(float.Parse(xCordinateToolStripTextBox.Text.ToString()), float.Parse(yCordinateToolStripTextBox.Text.ToString()), float.Parse(zCordinateToolStripTextBox.Text.ToString()));
+            }
+            catch(Exception exc)
+            {
+                MessageBox.Show("输入的坐标不合法，请输入小数或整数，确认无误后点击 Apply 继续\n错误描述：\n" + exc.Message, "严重错误");
+            }
+            formTextRebuild();
+            pictureBoxDown.Refresh();
+            pictureBoxUp.Refresh();
+        }
+
+        private void selectToolStripComboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            applyTtripButton_Click(sender, e);
+        }
+        private void roateSpeedToolStripTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = true;
+            if (e.KeyChar == (char)13)
+            {
+                applyTtripButton_Click(sender, e);
+            }
+            else if (e.KeyChar >= '0' && e.KeyChar <= '9' || e.KeyChar == '.' || e.KeyChar == (char)8)
+            {
+                e.Handled = false;
+            }
+            else
+                MessageBox.Show("The key \"" + e.KeyChar + "\" entered is illegal.\n\nPlease entry the key of \" Enter\" to confirm your revise.", "Warning!");
+        }
+
+        private void roateStopToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            roateDefaultToolStripMenuItem.Enabled = true;
+            roateStopToolStripMenuItem.Enabled = false;
+            startToolStripButton2.Enabled = true;
+            stopToolStripButton3.Enabled = false;
+            formTextRebuild();
+            timer1.Stop();
+        }
+
+        private void roateDefaultToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            roateStopToolStripMenuItem.Enabled = true;
+            roateDefaultToolStripMenuItem.Enabled = false;
+            startToolStripButton2.Enabled = false;
+            stopToolStripButton3.Enabled = true;
+            formTextRebuild();
+            timer1.Start();
+        }
+
+        private void startToolStripButton2_Click(object sender, EventArgs e)
+        {
+            applyTtripButton_Click(sender, e);
+            roateStopToolStripMenuItem.Enabled = true;
+            roateDefaultToolStripMenuItem.Enabled = false;
+            startToolStripButton2.Enabled = false;
+            stopToolStripButton3.Enabled = true;
+            formTextRebuild();
+            timer1.Start();
+        }
+
+        private void stopToolStripButton3_Click(object sender, EventArgs e)
+        {
+            applyTtripButton_Click(sender, e);
+            roateDefaultToolStripMenuItem.Enabled = true;
+            roateStopToolStripMenuItem.Enabled = false;
+            startToolStripButton2.Enabled = true;
+            stopToolStripButton3.Enabled = false;
+            formTextRebuild();
+            timer1.Stop();
+        }
+
+        /* ********************************
+         * 绘制坐标系和立方体
+         * ***********************/
+
+        const int x = 50;
+        MyPoint station = new MyPoint(20, 20, 200);
+        MyPolyhedron cube = new MyPolyhedron(new List<MyLine3D> {
+            new MyLine3D(x, x, x, -x, x, x,true),
+            new MyLine3D(-x, x, x, -x, -x, x,true),
+            new MyLine3D(-x, -x, x, x, -x, x,true),
+            new MyLine3D(x, -x, x, x, x, x,true),
+
+            new MyLine3D(x, x, -x, -x, x, -x,true),
+            new MyLine3D(-x, x, -x, -x, -x, -x,true),
+            new MyLine3D(-x, -x, -x, x, -x, -x,true),
+            new MyLine3D(x, -x, -x, x, x, -x,true),
+
+            new MyLine3D(x, x, -x, x, x, x,true),
+            new MyLine3D(-x, x, -x, -x, x, x,true),
+            new MyLine3D(-x, -x, -x, -x, -x, x,true),
+            new MyLine3D(x, -x, -x, x, -x, x,true) },
+            true,
+            new MyPoint(20,20,200));
+        private void pictureBoxUp_Paint(object sender, PaintEventArgs e)
+        {
+            cube = new MyPolyhedron(cube.inList, isParallel, station);
+            Graphics g = e.Graphics;
+            Pen pen = new Pen(Color.Black);
+            int width = pictureBoxDown.Width, height = pictureBoxDown.Height;
+            cube.paintMyself(g, Color.Black, width / 2, height / 2);
+
+        }
+        private PointF getEnd(PointF from,double direction, double distance)
+        {
+            return new PointF((float)(from.X + distance * Math.Cos(direction)), (float)(from.Y + distance * Math.Sin(direction)));
+        }
+        private PointF getEnd(PointF from, PointF direction, double distance)
+        {
+            double len = Math.Sqrt((from.X - direction.X) * (from.X - direction.X) + (from.Y - direction.Y) * (from.Y - direction.Y));
+            return new PointF((float)(from.X + distance * (direction.X - from.X) / len), (float)(from.Y + distance * (direction.Y - from.Y) / len));
+        }
+        private void pictureBoxDown_Paint(object sender, PaintEventArgs e)
+        {
+            /* ********************************
+             * 绘制坐标系
+             * 主要绘制的是坐标轴
+             * ***********************/
+            Graphics g = e.Graphics;
+            Pen pen = new Pen(Color.Black);
+            int width = pictureBoxDown.Width, height = pictureBoxDown.Height;
+            Point pO = new Point(width / 2 - 10, height / 2 + 2);
+            Point pX = new Point(width - 10, height / 2 + 2);
+            Point pY = new Point(width / 2 + 1, 0);
+            Font f = new Font("Arial", 8);
+            g.DrawString("O", f, Brushes.Black, pO);
+            g.DrawString("X", f, Brushes.Black, pX);
+            g.DrawString("Y", f, Brushes.Black, pY);
+            g.DrawLine(pen, width / 2, 0, width / 2, height/2);
+            g.DrawLine(pen, width / 2, 0, width / 2 - 2, 5);
+            g.DrawLine(pen, width / 2, 0, width / 2 + 2, 5);
+            g.DrawLine(pen, width/2, height / 2, width, height / 2);
+            g.DrawLine(pen, width - 5, height / 2 - 2, width, height / 2);
+            g.DrawLine(pen, width - 5, height / 2 + 2, width, height / 2);
+
+            //接下来是画 z 轴
+            //投影 z 轴上足够远得一点
+            PointF pZ;
+            if (isParallel)
+            {
+                //pZ = new MyPoint(0, 0, 50000).projectionParallel(station);
+                pZ = new MyPoint(0, 0, station.Z / 2).projectionParallel(station);
+                pZ = getEnd(new PointF(0, 0), pZ, 5000);
+            }
+            else
+            {
+                pZ = new MyPoint(0, 0, station.Z / 2).projectionPerspective(station);
+                pZ = getEnd(new PointF(0, 0), pZ,5000);
+            }
+
+            if (pZ.X >= width / 2 - 20)
+                pZ = new PointF(width / 2 - 20, pZ.Y * (width / 2 - 20) / pZ.X);
+            else if (pZ.X <= -width / 2 + 10)
+                pZ = new PointF(-width/2 +20, pZ.Y * (-width / 2 + 20) / pZ.X);
+            if (pZ.Y >= height / 2 - 20)
+                pZ = new PointF(pZ.X * (height / 2 - 20) / pZ.Y, height / 2 - 20);
+            else if(pZ.Y <= -height / 2 + 20)
+                pZ = new PointF(pZ.X * (-height / 2 + 20) / pZ.Y, -height / 2 + 20);
+            //将 pZ 变换到显示坐标系中去
+            g.DrawLine(pen, width / 2, height / 2, pZ.X + width / 2, -pZ.Y + height / 2);
+            
+
+            if (pZ.X == 0 && pZ.Y == 0)
+            {
+                g.FillEllipse(Brushes.Red, width / 2 - 1, height / 2 - 1, 2, 2);
+                g.DrawString("Z", f, Brushes.Black, pZ.X+width/2,pZ.Y+height/2);
+            }
+            else
+            {
+                PointF end = getEnd(pZ, Math.Atan2(pZ.Y, pZ.X) - 0.4 + Math.PI, 8);
+                g.DrawLine(pen, pZ.X + width / 2, -pZ.Y + height / 2, end.X + width / 2, -end.Y + height / 2);
+                end = getEnd(pZ, Math.Atan2(pZ.Y, pZ.X) + 0.4 + Math.PI, 8);
+                g.DrawLine(pen, pZ.X + width / 2, -pZ.Y + height / 2, end.X + width / 2, -end.Y + height / 2);
+                end = getEnd(pZ, Math.Atan2(pZ.Y, pZ.X), 8);
+                g.DrawString("Z", f, Brushes.Black, end.X + width / 2, -end.Y + height / 2);
+            }
+        }
+
+        bool flag = false;
+        private void timer1_Tick_1(object sender, EventArgs e)
+        {
+            try
+            {
+                if (flag)
+                {
+                    cube.rollMyself(float.Parse(roateSpeedToolStripTextBox.Text.ToString()));
+                    flag = !flag;
+                }
+                else
+                {
+                    pictureBoxUp.Refresh();
+                    flag = !flag;
+                }
+            }
+            catch(Exception exc)
+            {
+                roateStopToolStripMenuItem_Click(sender, e);
+                MessageBox.Show("不是合法的速度指数，请输入小数或整数\n错误描述：\n" + exc.Message, "严重错误");
+            }
+        }
+
+        private void mainToolsMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("还没有完成，可以点击下面的按钮实现", "很抱歉");
+        }
+
+        private void inputButton1_Click(object sender, EventArgs e)
+        {
+            List<MyLine3D> newPolyhedron = new List<MyLine3D> { };
+            string str = inputTextBox1.Text.ToString();
+            try
+            {
+                string[] array = str.Split(new Char[] { '\r',',',' ','\n','\t' } , StringSplitOptions.RemoveEmptyEntries);
+                int count = array.Length;
+                if (count % 6 == 0)
+                {
+                    for(int i = 0;i<count /6;i++)
+                    {
+                        float x1 = float.Parse(array[i * 6 + 0]);
+                        float y1 = float.Parse(array[i * 6 + 1]);
+                        float z1 = float.Parse(array[i * 6 + 2]);
+                        float x2 = float.Parse(array[i * 6 + 3]);
+                        float y2 = float.Parse(array[i * 6 + 4]);
+                        float z2 = float.Parse(array[i * 6 + 5]);
+                        newPolyhedron.Add(new MyLine3D(x1, y1,z1,x2,y2,z2,isParallel));
+                    }
+                    cube = new MyPolyhedron(newPolyhedron, isParallel, station);
+                    pictureBoxUp.Refresh();
+                    inputTextBox1.Visible = false;
+                    inputButton1.Visible = false;
+                }
+                else
+                {
+                    inputTextBox1.Text = "50 50 50 -50 50 50\r\n-50 -50 50 -50 50 50\r\n50 -50 50 -50 -50 50\r\n50 50 50 50 -50 50\r\n50 50 -50 -50 50 -50\r\n-50 -50 -50 -50 50 -50\r\n50 -50 -50 -50 -50 -50\r\n50 50 -50 50 -50 -50\r\n50 50 50 50 50 -50\r\n-50 50 50 -50 50 -50\r\n-50 -50 50 -50 -50 -50\r\n50 -50 50 50 -50 -50";
+
+                    cube = new MyPolyhedron(new List<MyLine3D>{
+                        new MyLine3D(x, x, x, -x, x, x,true),
+                        new MyLine3D(-x, x, x, -x, -x, x,true),
+                        new MyLine3D(-x, -x, x, x, -x, x,true),
+                        new MyLine3D(x, -x, x, x, x, x,true),
+
+                        new MyLine3D(x, x, -x, -x, x, -x,true),
+                        new MyLine3D(-x, x, -x, -x, -x, -x,true),
+                        new MyLine3D(-x, -x, -x, x, -x, -x,true),
+                        new MyLine3D(x, -x, -x, x, x, -x,true),
+
+                        new MyLine3D(x, x, -x, x, x, x,true),
+                        new MyLine3D(-x, x, -x, -x, x, x,true),
+                        new MyLine3D(-x, -x, -x, -x, -x, x,true),
+                        new MyLine3D(x, -x, -x, x, -x, x,true)},
+                    isParallel,
+                     station);
+                    pictureBoxUp.Refresh();
+                    throw new Exception();
+                }
+            }
+            catch(Exception exc)
+            {
+                MessageBox.Show("输入的不是合法的多面体数据，请确认输入是否合法。", "严重错误！");
+                inputButton1.Visible = false;
+                inputTextBox1.Visible = false;
+            }
+        }
+    }
+}

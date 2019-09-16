@@ -1,0 +1,10 @@
+C:\Users\yzy77\Desktop\ScanConversion\ScanConversion\bin\Debug\ScanConversion.exe.config
+C:\Users\yzy77\Desktop\ScanConversion\ScanConversion\bin\Debug\ScanConversion.exe
+C:\Users\yzy77\Desktop\ScanConversion\ScanConversion\bin\Debug\ScanConversion.pdb
+C:\Users\yzy77\Desktop\ScanConversion\ScanConversion\obj\Debug\ScanConversion.form1.resources
+C:\Users\yzy77\Desktop\ScanConversion\ScanConversion\obj\Debug\ScanConversion.Properties.Resources.resources
+C:\Users\yzy77\Desktop\ScanConversion\ScanConversion\obj\Debug\ScanConversion.csproj.GenerateResource.Cache
+C:\Users\yzy77\Desktop\ScanConversion\ScanConversion\obj\Debug\ScanConversion.csproj.CoreCompileInputs.cache
+C:\Users\yzy77\Desktop\ScanConversion\ScanConversion\obj\Debug\ScanConversion.exe
+C:\Users\yzy77\Desktop\ScanConversion\ScanConversion\obj\Debug\ScanConversion.pdb
+C:\Users\yzy77\Desktop\ScanConversion\ScanConversion\obj\Debug\ScanConversion.csprojResolveAssemblyReference.cache
